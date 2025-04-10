@@ -1,0 +1,12 @@
+{
+  "team_001": {
+    "team_name": "CodeStorm",
+    "members": ["Amrutha", "Deepiga", "Caroline"],
+    "college": "Rajalakshmi Engineering College"
+  },
+  "TEAM002": {
+    "team_name": "HackBlazers",
+    "members": ["David", "Eva", "Frank"],
+    "college": "ABC College"
+  }
+}
