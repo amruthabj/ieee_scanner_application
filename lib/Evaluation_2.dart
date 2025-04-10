@@ -14,6 +14,7 @@ class Evaluation2Page extends StatefulWidget {
 
 class _Evaluation2PageState extends State<Evaluation2Page> {
   final _formKey = GlobalKey<FormState>();
+  bool firstEvaluationDone = false;
 
   final Map<String, dynamic> formData = {
     "teamCode": "",
@@ -31,7 +32,36 @@ class _Evaluation2PageState extends State<Evaluation2Page> {
     super.initState();
     formData['teamCode'] = widget.teamCode;
     formData['teamName'] = widget.teamName;
+    checkFirstEvaluationStatus();
   }
+
+  Future<void> checkFirstEvaluationStatus() async {
+    final url = Uri.parse(
+        'https://script.google.com/macros/s/AKfycbwaGc1uKBHC9K6U1PNEvdvq9IzuS5MPBFZ_W-Doti93okBGWkfxCdJMWsY84QLYrPC_/exec');
+
+    try {
+      final response = await http.get(url);
+      print("Raw response: ${response.body}");
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print("Decoded JSON: $data");
+        if (data != null &&
+            (data['clarity'] != null ||
+                data['progress'] != null ||
+                data['technicalDepth'] != null ||
+                data['innovation'] != null ||
+                data['collaboration'] != null ||
+                data['scalability'] != null)) {
+          setState(() {
+            firstEvaluationDone = true;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error checking evaluation status: $e');
+    }
+  }
+
 
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
@@ -50,7 +80,8 @@ class _Evaluation2PageState extends State<Evaluation2Page> {
       };
 
       final response = await http.post(
-        Uri.parse('https://script.google.com/macros/s/AKfycby6Lc_e6O9r5Kf7tB1BXEfV-_lTXkN-KaLzW9l3H-ueNTwjrqMZT9pvoaLRelQ3dFUw/exec'),
+        Uri.parse(
+            'https://script.google.com/macros/s/AKfycbyLGqVT8_jbr8h8cryLooSK9-2Pl0EjoXSKPCopncFzxdXlB6fmwXWAKg50a0dZ-hCq/exec'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(finalData),
       );
@@ -88,7 +119,7 @@ class _Evaluation2PageState extends State<Evaluation2Page> {
           if (number != null && (maxValue == null || number <= maxValue)) {
             formData[key] = number;
           } else {
-            formData[key] = null; // leave it empty
+            formData[key] = null;
           }
         } else {
           formData[key] = value;
@@ -115,19 +146,43 @@ class _Evaluation2PageState extends State<Evaluation2Page> {
               SizedBox(height: 10),
               _buildTextField('Team Name', 'teamName', readOnly: true),
               SizedBox(height: 10),
-              _buildTextField('Problem Clarity & Approach (out of 15)', 'clarity', isNumber: true, maxValue: 15),
+              _buildTextField('Problem Clarity & Approach (out of 15)', 'clarity',
+                  isNumber: true, maxValue: 15),
               SizedBox(height: 10),
-              _buildTextField('Progress & Functionality (out of 25)', 'progress', isNumber: true, maxValue: 25),
+              _buildTextField('Progress & Functionality (out of 25)', 'progress',
+                  isNumber: true, maxValue: 25),
               SizedBox(height: 10),
-              _buildTextField('Technical Depth (out of 20)', 'technicalDepth', isNumber: true, maxValue: 20),
+              _buildTextField('Technical Depth (out of 20)', 'technicalDepth',
+                  isNumber: true, maxValue: 20),
               SizedBox(height: 10),
-              _buildTextField('Innovation & Originality (out of 15)', 'innovation', isNumber: true, maxValue: 15),
+              _buildTextField('Innovation & Originality (out of 15)', 'innovation',
+                  isNumber: true, maxValue: 15),
               SizedBox(height: 10),
-              _buildTextField('Team Collaboration (out of 10)', 'collaboration', isNumber: true, maxValue: 10),
+              _buildTextField('Team Collaboration (out of 10)', 'collaboration',
+                  isNumber: true, maxValue: 10),
               SizedBox(height: 10),
-              _buildTextField('Scalability & Real-World Impact (out of 10)', 'scalability', isNumber: true, maxValue: 10),
+              _buildTextField(
+                  'Scalability & Real-World Impact (out of 10)', 'scalability',
+                  isNumber: true, maxValue: 10),
               SizedBox(height: 20),
-              ElevatedButton(
+              firstEvaluationDone
+                  ? Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Center(
+                  child: Text(
+                    "1ST EVALUATION DONE",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              )
+                  : ElevatedButton(
                 onPressed: _submitForm,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple[800],
