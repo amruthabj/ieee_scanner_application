@@ -35,12 +35,25 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
         child: AppBar(
           backgroundColor: Colors.purple,
           flexibleSpace: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 20.0,
+              vertical: 20.0,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Image.asset('assets/logo.png', height: 150, width: 150, fit: BoxFit.contain),
-                Image.asset('assets/cslogo.png', height: 150, width: 150, fit: BoxFit.contain),
+                Image.asset(
+                  'assets/logo.png',
+                  height: 150,
+                  width: 150,
+                  fit: BoxFit.contain,
+                ),
+                Image.asset(
+                  'assets/cslogo.png',
+                  height: 150,
+                  width: 150,
+                  fit: BoxFit.contain,
+                ),
               ],
             ),
           ),
@@ -51,39 +64,76 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Team ID: ${widget.teamId}',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple[700])),
+            Text(
+              'Team ID: ${widget.teamId}',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple[700],
+              ),
+            ),
             SizedBox(height: 8),
-            Text(teamData['team_name'] ?? '',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.purple[900])),
+            Text(
+              teamData['team_name'] ?? '',
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.purple[900],
+              ),
+            ),
             SizedBox(height: 16),
-            Text('College:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.deepPurple)),
-            Text(teamData['college'] ?? '',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+            Text(
+              'College:',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.deepPurple,
+              ),
+            ),
+            Text(
+              teamData['college'] ?? '',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
             SizedBox(height: 16),
 
             // Display Team Members using Column
-            Text('Team Members:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.deepPurple)),
+            Text(
+              'Team Members:',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.deepPurple,
+              ),
+            ),
             SizedBox(height: 8),
 
             members.isEmpty
-                ? Text('No team members available', style: TextStyle(color: Colors.grey[600]))
+                ? Text(
+                  'No team members available',
+                  style: TextStyle(color: Colors.grey[600]),
+                )
                 : Column(
-              children: List.generate(
-                members.length,
+                  children: List.generate(
+                    members.length,
                     (index) => Card(
-                  margin: EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    title: Text(
-                      members[index],
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                      margin: EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        title: Text(
+                          members[index],
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
 
             SizedBox(height: 25),
 
@@ -102,12 +152,25 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                 setState(() {
                   isEvaluation1 = true; // Set to Evaluation 1
                 });
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => Evaluation2Page(
+                          teamCode: widget.teamId,
+                          teamName: teamData['team_name'] ?? '',
+                        ),
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: isEvaluation1 ? Colors.purple : Colors.grey,
                 padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
               ),
-              child: Text('Evaluation 1', style: TextStyle(color: Colors.white)), // White text
+              child: Text(
+                'Evaluation 1',
+                style: TextStyle(color: Colors.white),
+              ), // White text
             ),
             SizedBox(width: 20),
             ElevatedButton(
@@ -119,10 +182,11 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => Evaluation2Page(
-                      teamCode: widget.teamId,
-                      teamName: teamData['team_name'] ?? '',
-                    ),
+                    builder:
+                        (context) => Evaluation2Page(
+                          teamCode: widget.teamId,
+                          teamName: teamData['team_name'] ?? '',
+                        ),
                   ),
                 );
               },
@@ -131,7 +195,10 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                 backgroundColor: !isEvaluation1 ? Colors.purple : Colors.grey,
                 padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
               ),
-              child: Text('Evaluation 2', style: TextStyle(color: Colors.white)), // White text
+              child: Text(
+                'Evaluation 2',
+                style: TextStyle(color: Colors.white),
+              ), // White text
             ),
           ],
         ),
