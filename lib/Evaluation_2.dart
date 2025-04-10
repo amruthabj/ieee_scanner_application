@@ -54,15 +54,16 @@ class _Evaluation2PageState extends State<Evaluation2Page> {
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(finalData),
       );
-
     }
   }
 
   Widget _buildTextField(String label, String key,
-      {bool isNumber = false, bool readOnly = false}) {
+      {bool isNumber = false, bool readOnly = false, double? maxValue}) {
     return TextFormField(
       readOnly: readOnly,
-      initialValue: (formData[key] != null && !isNumber) ? formData[key].toString() : '',
+      initialValue: (formData[key] != null && !isNumber)
+          ? formData[key].toString()
+          : '',
       keyboardType: isNumber ? TextInputType.number : TextInputType.text,
       decoration: InputDecoration(
         labelText: label,
@@ -72,10 +73,27 @@ class _Evaluation2PageState extends State<Evaluation2Page> {
       ),
       validator: (value) {
         if (value == null || value.isEmpty) return 'Required';
-        if (isNumber && double.tryParse(value) == null) return 'Enter a valid number';
+        if (isNumber) {
+          final number = double.tryParse(value);
+          if (number == null) return 'Enter a valid number';
+          if (maxValue != null && number > maxValue) {
+            return 'Value exceeds max ($maxValue)';
+          }
+        }
         return null;
       },
-      onSaved: (value) => formData[key] = isNumber ? double.tryParse(value ?? "") ?? 0.0 : value,
+      onSaved: (value) {
+        if (isNumber) {
+          final number = double.tryParse(value ?? "");
+          if (number != null && (maxValue == null || number <= maxValue)) {
+            formData[key] = number;
+          } else {
+            formData[key] = null; // leave it empty
+          }
+        } else {
+          formData[key] = value;
+        }
+      },
     );
   }
 
@@ -97,23 +115,23 @@ class _Evaluation2PageState extends State<Evaluation2Page> {
               SizedBox(height: 10),
               _buildTextField('Team Name', 'teamName', readOnly: true),
               SizedBox(height: 10),
-              _buildTextField('Problem Clarity & Approach (out of 15)', 'clarity', isNumber: true),
+              _buildTextField('Problem Clarity & Approach (out of 15)', 'clarity', isNumber: true, maxValue: 15),
               SizedBox(height: 10),
-              _buildTextField('Progress & Functionality (out of 25)', 'progress', isNumber: true),
+              _buildTextField('Progress & Functionality (out of 25)', 'progress', isNumber: true, maxValue: 25),
               SizedBox(height: 10),
-              _buildTextField('Technical Depth (out of 20)', 'technicalDepth', isNumber: true),
+              _buildTextField('Technical Depth (out of 20)', 'technicalDepth', isNumber: true, maxValue: 20),
               SizedBox(height: 10),
-              _buildTextField('Innovation & Originality (out of 15)', 'innovation', isNumber: true),
+              _buildTextField('Innovation & Originality (out of 15)', 'innovation', isNumber: true, maxValue: 15),
               SizedBox(height: 10),
-              _buildTextField('Team Collaboration (out of 10)', 'collaboration', isNumber: true),
+              _buildTextField('Team Collaboration (out of 10)', 'collaboration', isNumber: true, maxValue: 10),
               SizedBox(height: 10),
-              _buildTextField('Scalability & Real-World Impact (out of 10)', 'scalability', isNumber: true),
+              _buildTextField('Scalability & Real-World Impact (out of 10)', 'scalability', isNumber: true, maxValue: 10),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _submitForm,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.purple[800],
-                  foregroundColor: Colors.white, // <-- Text color white
+                  foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 16),
                   textStyle: TextStyle(fontSize: 16),
                 ),
