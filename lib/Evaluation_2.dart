@@ -38,13 +38,10 @@ class _Evaluation2PageState extends State<Evaluation2Page> {
   Future<void> checkFirstEvaluationStatus() async {
     final url = Uri.parse(
         'https://script.google.com/macros/s/AKfycbwaGc1uKBHC9K6U1PNEvdvq9IzuS5MPBFZ_W-Doti93okBGWkfxCdJMWsY84QLYrPC_/exec');
-
     try {
       final response = await http.get(url);
-      print("Raw response: ${response.body}");
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print("Decoded JSON: $data");
         if (data != null &&
             (data['clarity'] != null ||
                 data['progress'] != null ||
@@ -62,17 +59,16 @@ class _Evaluation2PageState extends State<Evaluation2Page> {
     }
   }
 
-
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      double total = (formData['clarity'] ?? 0) +
-          (formData['progress'] ?? 0) +
-          (formData['technicalDepth'] ?? 0) +
-          (formData['innovation'] ?? 0) +
-          (formData['collaboration'] ?? 0) +
-          (formData['scalability'] ?? 0);
+      double total = (formData['clarity'] ?? 0).toDouble() +
+          (formData['progress'] ?? 0).toDouble() +
+          (formData['technicalDepth'] ?? 0).toDouble() +
+          (formData['innovation'] ?? 0).toDouble() +
+          (formData['collaboration'] ?? 0).toDouble() +
+          (formData['scalability'] ?? 0).toDouble();
 
       Map<String, dynamic> finalData = {
         ...formData,
@@ -88,83 +84,163 @@ class _Evaluation2PageState extends State<Evaluation2Page> {
     }
   }
 
-  Widget _buildTextField(String label, String key,
-      {bool isNumber = false, bool readOnly = false, double? maxValue}) {
-    return TextFormField(
-      readOnly: readOnly,
-      initialValue: (formData[key] != null && !isNumber)
-          ? formData[key].toString()
-          : '',
-      keyboardType: isNumber ? TextInputType.number : TextInputType.text,
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(),
-        filled: true,
-        fillColor: readOnly ? Colors.grey.shade300 : Colors.purple.shade50,
+  Widget _scoreInput(String label, String key, double maxScore) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                  color: Colors.black,
+                ),
+                children: [
+                  TextSpan(text: "$label "),
+                  TextSpan(
+                    text: "(out of ${maxScore.toInt()})",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.normal,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: TextFormField(
+              keyboardType: TextInputType.number,
+              initialValue: formData[key]?.toString() ?? '',
+              decoration: InputDecoration(
+                isDense: true,
+                contentPadding:
+                EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                filled: true,
+                fillColor: Colors.purple.shade50,
+                border: OutlineInputBorder(),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'Required';
+                final number = double.tryParse(value);
+                if (number == null) return 'Enter valid number';
+                if (number > maxScore) return 'Max: $maxScore';
+                return null;
+              },
+              onChanged: (value) {
+                setState(() {
+                  formData[key] = double.tryParse(value) ?? 0;
+                });
+              },
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.edit, color: Colors.blue),
+            onPressed: () {
+              // Implement your edit functionality here
+              print("Edit button pressed for $key");
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.delete, color: Colors.red),
+            onPressed: () {
+              // Implement your delete functionality here
+              print("Delete button pressed for $key");
+            },
+          ),
+        ],
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) return 'Required';
-        if (isNumber) {
-          final number = double.tryParse(value);
-          if (number == null) return 'Enter a valid number';
-          if (maxValue != null && number > maxValue) {
-            return 'Value exceeds max ($maxValue)';
-          }
-        }
-        return null;
-      },
-      onSaved: (value) {
-        if (isNumber) {
-          final number = double.tryParse(value ?? "");
-          if (number != null && (maxValue == null || number <= maxValue)) {
-            formData[key] = number;
-          } else {
-            formData[key] = null;
-          }
-        } else {
-          formData[key] = value;
-        }
-      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.purple[100],
+      backgroundColor: Colors.purple[50],
       appBar: AppBar(
-        title: Text('Evaluation - Round 2'),
-        backgroundColor: Colors.purple[800],
+        backgroundColor: Colors.purple[200],
+        elevation: 0,
+        title: Text(
+          'XYNTRA 25 EVAL SCANNER',
+          style: TextStyle(fontSize: 14, color: Colors.black),
+        ),
+        centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
-              _buildTextField('Team Code', 'teamCode', readOnly: true),
-              SizedBox(height: 10),
-              _buildTextField('Team Name', 'teamName', readOnly: true),
-              SizedBox(height: 10),
-              _buildTextField('Problem Clarity & Approach (out of 15)', 'clarity',
-                  isNumber: true, maxValue: 15),
-              SizedBox(height: 10),
-              _buildTextField('Progress & Functionality (out of 25)', 'progress',
-                  isNumber: true, maxValue: 25),
-              SizedBox(height: 10),
-              _buildTextField('Technical Depth (out of 20)', 'technicalDepth',
-                  isNumber: true, maxValue: 20),
-              SizedBox(height: 10),
-              _buildTextField('Innovation & Originality (out of 15)', 'innovation',
-                  isNumber: true, maxValue: 15),
-              SizedBox(height: 10),
-              _buildTextField('Team Collaboration (out of 10)', 'collaboration',
-                  isNumber: true, maxValue: 10),
-              SizedBox(height: 10),
-              _buildTextField(
-                  'Scalability & Real-World Impact (out of 10)', 'scalability',
-                  isNumber: true, maxValue: 10),
-              SizedBox(height: 20),
+              Container(
+                color: Colors.purple[100],
+                padding: const EdgeInsets.all(12),
+                child: Center(
+                  child: Text(
+                    widget.teamName.toUpperCase(),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: Colors.purple[800],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              _scoreInput("Problem Clarity", "clarity", 15),
+              _scoreInput("Progress", "progress", 25),
+              _scoreInput("Technical Depth", "technicalDepth", 20),
+              _scoreInput("Innovation", "innovation", 15),
+              _scoreInput("Collaboration", "collaboration", 10),
+              _scoreInput("Scalability", "scalability", 10),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Text(
+                      "TOTAL SCORE :",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: Container(
+                      height: 40,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.purple.shade100,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        (() {
+                          double total = (formData['clarity'] ?? 0).toDouble() +
+                              (formData['progress'] ?? 0).toDouble() +
+                              (formData['technicalDepth'] ?? 0).toDouble() +
+                              (formData['innovation'] ?? 0).toDouble() +
+                              (formData['collaboration'] ?? 0).toDouble() +
+                              (formData['scalability'] ?? 0).toDouble();
+                          return total.round().toString();
+                        })(),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.purple[900],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 30),
               firstEvaluationDone
                   ? Container(
                 padding: EdgeInsets.all(16),
@@ -190,7 +266,7 @@ class _Evaluation2PageState extends State<Evaluation2Page> {
                   padding: EdgeInsets.symmetric(vertical: 16),
                   textStyle: TextStyle(fontSize: 16),
                 ),
-                child: Text('Submit Evaluation'),
+                child: Text('UPDATE SCORE'),
               ),
             ],
           ),
