@@ -1,0 +1,48 @@
+Future<Map<String, dynamic>?> fetchTeamMarks(String teamCode) async {
+    print("Fetching marks for team code: $teamCode");
+
+    final url = Uri.parse(
+      'https://script.google.com/macros/s/AKfycbyTWB2f9d0Rf47Rv5gaUeTXd9RYbu4BAT_ISfIZ7ki0DbXqGWrQVYOrWJgG1iyZej1X/exec?team_code=$teamCode',
+    );
+
+    final response = await http.get(url);
+    if (response.statusCode == 200) {
+      try {
+        // Attempt to parse only if it's valid JSON
+        if (response.body.startsWith('{')) {
+          final data = jsonDecode(response.body);
+          return data;
+        } else {
+          print("Non-JSON response: ${response.body}");
+          return null;
+        }
+      } catch (e) {
+        print("Parsing error: ${e.toString()}");
+        return null;
+      }
+    } else {
+      print("HTTP request failed with status ${response.statusCode}");
+      return null;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchTeamRankings() async {
+    final url = Uri.parse(
+      'https://script.google.com/macros/s/AKfycbyTWB2f9d0Rf47Rv5gaUeTXd9RYbu4BAT_ISfIZ7ki0DbXqGWrQVYOrWJgG1iyZej1X/exec',
+    );
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      try {
+        final List<dynamic> jsonList = jsonDecode(response.body);
+        return jsonList.cast<Map<String, dynamic>>();
+      } catch (e) {
+        print("Parsing error: ${e.toString()}");
+        return [];
+      }
+    } else {
+      print("HTTP request failed with status ${response.statusCode}");
+      return [];
+    }
+  }
