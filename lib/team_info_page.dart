@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'Evaluation_2.dart';
 
 class TeamInfoPage extends StatefulWidget {
   final Map<String, dynamic> data;
@@ -14,6 +15,7 @@ class TeamInfoPage extends StatefulWidget {
 
 class _TeamInfoPageState extends State<TeamInfoPage> {
   late Map<String, dynamic> teamData;
+  bool isEvaluation1 = true; // Track which evaluation mode is active
 
   @override
   void initState() {
@@ -22,55 +24,9 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
     teamData = Map<String, dynamic>.from(widget.data);
   }
 
-  Future<void> submitScore(BuildContext context, int score) async {
-    // Replace YOUR_SCRIPT_ID with your actual Google Apps Script ID
-    final scriptId = 'AKfycbxVeRRFM2VwKQ76XNBd6Tuuw2_tlIulvyGXWCJrUE27CpWdsCMizcbyncP6F0z3raEF'; // Replace with your actual script ID
-    final url = Uri.parse(
-      'https://script.google.com/macros/s/$scriptId/exec?teamId=${widget.teamId}',
-    );
-
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'teamId': widget.teamId,
-          'teamName': teamData['team_name'],
-          'score': score,
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        if (mounted) {
-          setState(() {
-            teamData['score'] = score;
-            teamData['score_history'] = List.from(teamData['score_history'] ?? [])..add(score);
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('✅ Score submitted successfully!')),
-          );
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('❌ Submission failed: ${response.statusCode}')),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('⚠️ Error: $e')),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final List<String> members = List<String>.from(teamData['members'] ?? []);
-    final List<int> scoreHistory = List<int>.from(teamData['score_history'] ?? []);
 
     return Scaffold(
       backgroundColor: Colors.purple[50],
@@ -92,124 +48,92 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Team ID: ${widget.teamId}',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple[700])),
-              SizedBox(height: 8),
-              Text(teamData['team_name'] ?? '',
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.purple[900])),
-              SizedBox(height: 16),
-              Text('College:',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.deepPurple)),
-              Text(teamData['college'] ?? '',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
-              SizedBox(height: 25),
-              Text('Team Members:',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.deepPurple)),
-              SizedBox(height: 10),
-              SizedBox(
-                height: 120,
-                child: ListView.separated(
-                  itemCount: members.length,
-                  separatorBuilder: (_, __) => Divider(),
-                  itemBuilder: (context, index) {
-                    return Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: Colors.deepPurple,
-                          child: Text(
-                            members[index][0].toUpperCase(),
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        title: Text(members[index], style: TextStyle(fontSize: 16)),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(height: 25),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Team ID: ${widget.teamId}',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple[700])),
+            SizedBox(height: 8),
+            Text(teamData['team_name'] ?? '',
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.purple[900])),
+            SizedBox(height: 16),
+            Text('College:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.deepPurple)),
+            Text(teamData['college'] ?? '',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+            SizedBox(height: 16),
 
-              if (scoreHistory.isNotEmpty) ...[
-                Text('Score History:',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.deepPurple)),
-                SizedBox(height: 10),
-                Container(
-                  height: 100,
-                  child: ListView.builder(
-                    itemCount: scoreHistory.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        leading: Icon(Icons.history, color: Colors.deepPurple),
-                        title: Text("Score: ${scoreHistory[index]}"),
-                      );
-                    },
+            // Display Team Members using Column
+            Text('Team Members:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.deepPurple)),
+            SizedBox(height: 8),
+
+            members.isEmpty
+                ? Text('No team members available', style: TextStyle(color: Colors.grey[600]))
+                : Column(
+              children: List.generate(
+                members.length,
+                    (index) => Card(
+                  margin: EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    title: Text(
+                      members[index],
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                    ),
                   ),
                 ),
-              ],
-
-              SizedBox(height: 20),
-
-              if (teamData.containsKey('score'))
-                Text(
-                  'Current Score: ${teamData['score']}',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.deepPurple[700]),
-                ),
-
-              SizedBox(height: 20),
-
-              Center(
-                child: ElevatedButton(
-                  onPressed: () {
-                    final TextEditingController scoreController = TextEditingController();
-
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text('Enter Score'),
-                        content: TextField(
-                          controller: scoreController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(hintText: "Enter team's score"),
-                        ),
-                        actions: [
-                          TextButton(
-                            child: Text('Cancel'),
-                            onPressed: () => Navigator.of(context).pop(),
-                          ),
-                          ElevatedButton(
-                            child: Text('Submit'),
-                            onPressed: () {
-                              final int? score = int.tryParse(scoreController.text);
-                              if (score != null) {
-                                Navigator.of(context).pop();
-                                submitScore(context, score);
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('⚠️ Please enter a valid number!')),
-                                );
-                              }
-                            },
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
-                    padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                    textStyle: TextStyle(fontSize: 18),
-                  ),
-                  child: Text('Submit Score'),
-                ),
               ),
-            ],
-          ),
+            ),
+
+            SizedBox(height: 25),
+
+            // Evaluation Buttons will be at the bottom of the screen
+            SizedBox(height: 150), // Adding space for bottom buttons
+          ],
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  isEvaluation1 = true; // Set to Evaluation 1
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isEvaluation1 ? Colors.purple : Colors.grey,
+                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+              ),
+              child: Text('Evaluation 1', style: TextStyle(color: Colors.white)), // White text
+            ),
+            SizedBox(width: 20),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  isEvaluation1 = false;
+                });
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Evaluation2Page(
+                      teamCode: widget.teamId,
+                      teamName: teamData['team_name'] ?? '',
+                    ),
+                  ),
+                );
+              },
+
+              style: ElevatedButton.styleFrom(
+                backgroundColor: !isEvaluation1 ? Colors.purple : Colors.grey,
+                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+              ),
+              child: Text('Evaluation 2', style: TextStyle(color: Colors.white)), // White text
+            ),
+          ],
         ),
       ),
     );
