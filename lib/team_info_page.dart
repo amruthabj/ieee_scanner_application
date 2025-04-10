@@ -15,10 +15,38 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
   late Map<String, dynamic> teamData;
   bool isEvaluation1 = true;
 
+  final Color purple = const Color(0xFF6A1B9A); // Deep purple
+  final Color lightPurple = const Color(0xFFE1BEE7); // Soft purple
+
   @override
   void initState() {
     super.initState();
     teamData = Map<String, dynamic>.from(widget.data);
+  }
+
+  Widget _buildLabeledField(String label, String? value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "$label :",
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: Colors.black, width: 1)),
+          ),
+          child: Text(
+            value ?? '',
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
   }
 
   @override
@@ -26,151 +54,154 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
     final List<String> members = List<String>.from(teamData['members'] ?? []);
 
     return Scaffold(
-      backgroundColor: Colors.purple[50],
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(100),
-        child: AppBar(
-          backgroundColor: Colors.purple,
-          flexibleSpace: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20.0,
-              vertical: 20.0,
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Image.asset(
-                  'assets/logo.png',
-                  height: 150,
-                  width: 150,
-                  fit: BoxFit.contain,
-                ),
-                Image.asset(
-                  'assets/cslogo.png',
-                  height: 150,
-                  width: 150,
-                  fit: BoxFit.contain,
-                ),
-              ],
-            ),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: lightPurple,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        title: const Text(
+          'XYNTRA 25 EVAL SCANNER',
+          style: TextStyle(
+            fontSize: 14,
+            letterSpacing: 1,
+            color: Colors.black87,
           ),
         ),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(20),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Team ID: ${widget.teamId}',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepPurple[700],
-              ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              teamData['team_name'] ?? '',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Colors.purple[900],
-              ),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'College:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.deepPurple,
-              ),
-            ),
-            Text(
-              teamData['college'] ?? '',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            SizedBox(height: 16),
-            Text('Location:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.deepPurple)),
-            Text(teamData['location'] ?? '',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
-            SizedBox(height: 16),
-            Text('Lead Contact:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.deepPurple)),
-            Text(teamData['lead_contact'] ?? '',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
-            SizedBox(height: 16),
-            Text('Team Members:',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.deepPurple)),
-            SizedBox(height: 8),
-            members.isEmpty
-                ? Text(
-                  'No team members available',
-                  style: TextStyle(color: Colors.grey[600]),
-                )
-                : Column(
-                  children: List.generate(
-                    members.length,
-                    (index) => Card(
-                  margin: EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    title: Text(
-                      members[index],
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
-                    ),
+            Container(
+              width: double.infinity,
+              color: purple.withOpacity(0.2),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Center(
+                child: Text(
+                  teamData['team_name']?.toUpperCase() ?? 'TEAM NAME',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: purple,
                   ),
                 ),
               ),
             ),
-            SizedBox(height: 80), // add spacing for bottom nav
+            const SizedBox(height: 20),
+            _buildLabeledField("TEAM CODE", "< ${widget.teamId} />"),
+            _buildLabeledField("COLLEGE", teamData['college']),
+            _buildLabeledField("LOCATION", teamData['location']),
+            _buildLabeledField("LEAD CONTACT", teamData['lead_contact']),
+            const SizedBox(height: 10),
+            const Divider(thickness: 1),
+            const SizedBox(height: 10),
+            const Center(
+              child: Text(
+                "MEMBERS",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            ...members.map((member) => Container(
+              width: double.infinity,
+              margin: const EdgeInsets.only(bottom: 8),
+              height: 40,
+              decoration: BoxDecoration(
+                color: lightPurple,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                member,
+                style: TextStyle(fontSize: 16),
+              ),
+            )),
+            const SizedBox(height: 40),
           ],
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border(top: BorderSide(color: Colors.grey.shade300)),
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  isEvaluation1 = true;
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isEvaluation1 ? Colors.purple : Colors.grey,
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+            Text(
+              'EVALUATION :',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
               ),
-              child: Text('Evaluation 1', style: TextStyle(color: Colors.white)),
             ),
-            SizedBox(width: 20),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  isEvaluation1 = false;
-                });
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) => Evaluation2Page(
-                          teamCode: widget.teamId,
-                          teamName: teamData['team_name'] ?? '',
-                        ),
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: !isEvaluation1 ? Colors.purple : Colors.grey,
-                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+            const SizedBox(width: 10),
+            Container(
+              decoration: BoxDecoration(
+                color: lightPurple,
+                borderRadius: BorderRadius.circular(8),
               ),
-              child: Text('Evaluation 2', style: TextStyle(color: Colors.white)),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => setState(() => isEvaluation1 = true),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: isEvaluation1 ? purple : lightPurple,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(8),
+                          bottomLeft: Radius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        "I",
+                        style: TextStyle(
+                          color: isEvaluation1 ? Colors.white : Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() => isEvaluation1 = false);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Evaluation2Page(
+                            teamCode: widget.teamId,
+                            teamName: teamData['team_name'] ?? '',
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: !isEvaluation1 ? purple : lightPurple,
+                        borderRadius: const BorderRadius.only(
+                          topRight: Radius.circular(8),
+                          bottomRight: Radius.circular(8),
+                        ),
+                      ),
+                      child: Text(
+                        "II",
+                        style: TextStyle(
+                          color: !isEvaluation1 ? Colors.white : Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
