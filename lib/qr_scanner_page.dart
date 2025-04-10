@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -42,16 +43,17 @@ class _QRScannerPageState extends State<QRScannerPage> {
   void showPermissionDeniedDialog() {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: Text('Permission Required'),
-        content: Text('Camera permission is required to scan QR codes.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('OK'),
-          )
-        ],
-      ),
+      builder:
+          (_) => AlertDialog(
+            title: Text('Permission Required'),
+            content: Text('Camera permission is required to scan QR codes.'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('OK'),
+              ),
+            ],
+          ),
     );
   }
 
@@ -67,13 +69,12 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
       if (teamId != null && teamData != null && teamData!.containsKey(teamId)) {
         controller?.pauseCamera();
+        print('TEAM DATA = ${teamData![teamId]!}');
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => TeamInfoPage(
-              data: teamData![teamId]!,
-              teamId: teamId,
-            ),
+            builder:
+                (_) => TeamInfoPage(data: teamData![teamId]!, teamId: teamId),
           ),
         ).then((_) => controller?.resumeCamera());
       } else {
@@ -92,7 +93,12 @@ class _QRScannerPageState extends State<QRScannerPage> {
         child: AppBar(
           backgroundColor: Colors.purple,
           flexibleSpace: Padding(
-            padding: const EdgeInsets.only(left: 20.0, right: 20.0, top: 20.0, bottom: 5.0),
+            padding: const EdgeInsets.only(
+              left: 20.0,
+              right: 20.0,
+              top: 20.0,
+              bottom: 5.0,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -113,56 +119,62 @@ class _QRScannerPageState extends State<QRScannerPage> {
           ),
         ),
       ),
-      body: hasPermission
-          ? Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: Text(
-              'Scan the Team QR',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepPurple,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Stack(
-              children: [
-                QRView(
-                  key: qrKey,
-                  onQRViewCreated: _onQRViewCreated,
-                  overlay: QrScannerOverlayShape(
-                    borderColor: Colors.green,
-                    borderRadius: 10,
-                    borderLength: 30,
-                    borderWidth: 10,
-                    cutOutSize: MediaQuery.of(context).size.width * 0.7,
-                  ),
-                ),
-                Positioned(
-                  bottom: 20,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: ElevatedButton.icon(
-                      icon: Icon(isFlashOn ? Icons.flash_off : Icons.flash_on),
-                      label: Text(isFlashOn ? 'Flash Off' : 'Flash On'),
-                      onPressed: () async {
-                        await controller?.toggleFlash();
-                        bool? flashStatus = await controller?.getFlashStatus();
-                        setState(() => isFlashOn = flashStatus ?? false);
-                      },
+      body:
+          hasPermission
+              ? Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    child: Text(
+                      'Scan the Team QR',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.deepPurple,
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      )
-          : Center(child: Text('Requesting camera permission...')),
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        QRView(
+                          key: qrKey,
+                          onQRViewCreated: _onQRViewCreated,
+                          overlay: QrScannerOverlayShape(
+                            borderColor: Colors.green,
+                            borderRadius: 10,
+                            borderLength: 30,
+                            borderWidth: 10,
+                            cutOutSize: MediaQuery.of(context).size.width * 0.7,
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 20,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: ElevatedButton.icon(
+                              icon: Icon(
+                                isFlashOn ? Icons.flash_off : Icons.flash_on,
+                              ),
+                              label: Text(isFlashOn ? 'Flash Off' : 'Flash On'),
+                              onPressed: () async {
+                                await controller?.toggleFlash();
+                                bool? flashStatus =
+                                    await controller?.getFlashStatus();
+                                setState(
+                                  () => isFlashOn = flashStatus ?? false,
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              )
+              : Center(child: Text('Requesting camera permission...')),
     );
   }
 }
