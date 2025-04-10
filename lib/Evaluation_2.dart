@@ -50,14 +50,11 @@ class _Evaluation2PageState extends State<Evaluation2Page> {
       };
 
       final response = await http.post(
-        Uri.parse('https://script.google.com/macros/s/AKfycbyB0lBQB7uIhmxkN6ufT6XHyF1KDT_7GYSjVl4LrnlSR930oEmbmcKAyT0lbLnqipQ/exec?alt=raw'),
+        Uri.parse('https://script.google.com/macros/s/AKfycby6Lc_e6O9r5Kf7tB1BXEfV-_lTXkN-KaLzW9l3H-ueNTwjrqMZT9pvoaLRelQ3dFUw/exec'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(finalData),
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Response: ${response.body}')),
-      );
     }
   }
 

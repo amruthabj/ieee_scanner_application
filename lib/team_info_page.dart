@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'Evaluation_2.dart';
 
 class TeamInfoPage extends StatefulWidget {
@@ -15,12 +13,11 @@ class TeamInfoPage extends StatefulWidget {
 
 class _TeamInfoPageState extends State<TeamInfoPage> {
   late Map<String, dynamic> teamData;
-  bool isEvaluation1 = true; // Track which evaluation mode is active
+  bool isEvaluation1 = true;
 
   @override
   void initState() {
     super.initState();
-    // Defensive copy to prevent mutation
     teamData = Map<String, dynamic>.from(widget.data);
   }
 
@@ -59,7 +56,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
           ),
         ),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,18 +96,19 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
               ),
             ),
             SizedBox(height: 16),
-
-            // Display Team Members using Column
-            Text(
-              'Team Members:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.deepPurple,
-              ),
-            ),
+            Text('Location:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.deepPurple)),
+            Text(teamData['location'] ?? '',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+            SizedBox(height: 16),
+            Text('Lead Contact:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.deepPurple)),
+            Text(teamData['lead_contact'] ?? '',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+            SizedBox(height: 16),
+            Text('Team Members:',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.deepPurple)),
             SizedBox(height: 8),
-
             members.isEmpty
                 ? Text(
                   'No team members available',
@@ -120,25 +118,17 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                   children: List.generate(
                     members.length,
                     (index) => Card(
-                      margin: EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        title: Text(
-                          members[index],
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
+                  margin: EdgeInsets.only(bottom: 8),
+                  child: ListTile(
+                    title: Text(
+                      members[index],
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
                     ),
                   ),
                 ),
-
-            SizedBox(height: 25),
-
-            // Evaluation Buttons will be at the bottom of the screen
-            SizedBox(height: 150), // Adding space for bottom buttons
+              ),
+            ),
+            SizedBox(height: 80), // add spacing for bottom nav
           ],
         ),
       ),
@@ -150,27 +140,14 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
             ElevatedButton(
               onPressed: () {
                 setState(() {
-                  isEvaluation1 = true; // Set to Evaluation 1
+                  isEvaluation1 = true;
                 });
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) => Evaluation2Page(
-                          teamCode: widget.teamId,
-                          teamName: teamData['team_name'] ?? '',
-                        ),
-                  ),
-                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: isEvaluation1 ? Colors.purple : Colors.grey,
                 padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
               ),
-              child: Text(
-                'Evaluation 1',
-                style: TextStyle(color: Colors.white),
-              ), // White text
+              child: Text('Evaluation 1', style: TextStyle(color: Colors.white)),
             ),
             SizedBox(width: 20),
             ElevatedButton(
@@ -178,7 +155,6 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                 setState(() {
                   isEvaluation1 = false;
                 });
-
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -190,15 +166,11 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                   ),
                 );
               },
-
               style: ElevatedButton.styleFrom(
                 backgroundColor: !isEvaluation1 ? Colors.purple : Colors.grey,
                 padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
               ),
-              child: Text(
-                'Evaluation 2',
-                style: TextStyle(color: Colors.white),
-              ), // White text
+              child: Text('Evaluation 2', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
