@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -69,6 +70,8 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
+      log("CLICKED");
+
       double total =
           (formData['clarity'] ?? 0).toDouble() +
           (formData['progress'] ?? 0).toDouble() +
@@ -80,15 +83,16 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
       Map<String, dynamic> finalData = {
         ...formData,
         'totalScore': total.round(),
+        'eval_sheet': widget.evalution_number == 1 ? "E1 Scores" : "E2 Scores",
       };
-
+      final String url =
+          "https://script.google.com/macros/s/AKfycbwaGc1uKBHC9K6U1PNEvdvq9IzuS5MPBFZ_W-Doti93okBGWkfxCdJMWsY84QLYrPC_/exec";
       final response = await http.post(
-        Uri.parse(
-          'https://script.google.com/macros/s/AKfycbyLGqVT8_jbr8h8cryLooSK9-2Pl0EjoXSKPCopncFzxdXlB6fmwXWAKg50a0dZ-hCq/exec',
-        ),
+        Uri.parse(url),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(finalData),
       );
+      log('${response.body}');
     }
   }
 

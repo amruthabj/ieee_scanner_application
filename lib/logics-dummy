@@ -1,21 +1,20 @@
-Future<Map<String, dynamic>?> fetchTeamMarks(String teamCode) async {
+Future<Map<String, dynamic>?> fetchTeamMarks({
+    required String teamCode,
+    required int eval_number,
+  }) async {
     print("Fetching marks for team code: $teamCode");
-
+    String eval_sheet_name = eval_number == 1 ? "E1%20Scores" : "E2%20Scores";
     final url = Uri.parse(
-      'https://script.google.com/macros/s/AKfycbyTWB2f9d0Rf47Rv5gaUeTXd9RYbu4BAT_ISfIZ7ki0DbXqGWrQVYOrWJgG1iyZej1X/exec?team_code=$teamCode',
+      'https://script.google.com/macros/s/AKfycbwaGc1uKBHC9K6U1PNEvdvq9IzuS5MPBFZ_W-Doti93okBGWkfxCdJMWsY84QLYrPC_/exec?team_code=$teamCode&eval_sheet=$eval_sheet_name',
     );
 
     final response = await http.get(url);
+    log(response.body);
     if (response.statusCode == 200) {
       try {
         // Attempt to parse only if it's valid JSON
-        if (response.body.startsWith('{')) {
-          final data = jsonDecode(response.body);
-          return data;
-        } else {
-          print("Non-JSON response: ${response.body}");
-          return null;
-        }
+        final data = jsonDecode(response.body);
+        return data;
       } catch (e) {
         print("Parsing error: ${e.toString()}");
         return null;
@@ -25,6 +24,13 @@ Future<Map<String, dynamic>?> fetchTeamMarks(String teamCode) async {
       return null;
     }
   }
+
+
+CALL IT AS:
+fetchTeamMarks(
+            teamCode: "TEAM001",
+            eval_number: isEvaluation1 ? 1 : 2,
+          );
 
   Future<List<Map<String, dynamic>>> fetchTeamRankings() async {
     final url = Uri.parse(
