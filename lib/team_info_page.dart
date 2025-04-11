@@ -223,6 +223,34 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                 ),
               ],
             ),
+            if (e1Status || e2Status) ...[
+              const Divider(thickness: 1),
+              if (e1Status)
+                GestureDetector(
+                  onTap: () {},
+                  child: Text(
+                    "View 1st Evaluation Scores",
+                    style: TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 10),
+              if (e2Status)
+                GestureDetector(
+                  onTap: () {},
+                  child: Text(
+                    "View 2nd Evaluation Scores",
+                    style: TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+            ],
           ],
         ),
       ),
