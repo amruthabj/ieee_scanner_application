@@ -18,6 +18,8 @@ class TeamInfoPage extends StatefulWidget {
 class _TeamInfoPageState extends State<TeamInfoPage> {
   late Map<String, dynamic> teamData;
   bool isEvaluation1 = true;
+  bool e1Status = false;
+  bool e2Status = false;
 
   final Color purple = const Color(0xFF6A1B9A); // Deep purple
   final Color lightPurple = const Color(0xFFE1BEE7); // Soft purple
@@ -26,6 +28,29 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
   void initState() {
     super.initState();
     teamData = Map<String, dynamic>.from(widget.data);
+    fetchEvaluationStatus(widget.teamId);
+  }
+
+  Future<void> fetchEvaluationStatus(String teamCode) async {
+    final url = Uri.parse(
+      'https://script.google.com/macros/s/AKfycbwaGc1uKBHC9K6U1PNEvdvq9IzuS5MPBFZ_W-Doti93okBGWkfxCdJMWsY84QLYrPC_/exec?check_evaluation_status=true&team_code=$teamCode',
+    );
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          e1Status = data['e1_status'] ?? false;
+          e2Status = data['e2_status'] ?? false;
+          log('Eval 1 : $e1Status , Eval 2 : $e2Status');
+        });
+      } else {
+        print("HTTP Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching evaluation statusasdfgh: $e");
+    }
   }
 
   Widget _buildLabeledField(String label, String? value) {
@@ -203,7 +228,10 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
       ),
       bottomNavigationBar: GestureDetector(
         onTap: () {
-          setState(() => isEvaluation1 = false);
+          // fetchTeamMarks(
+          //   teamCode: "TEAM001",
+          //   eval_number: isEvaluation1 ? 1 : 2,
+          // );
           Navigator.push(
             context,
             MaterialPageRoute(

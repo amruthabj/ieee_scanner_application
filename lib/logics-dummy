@@ -76,3 +76,25 @@ fetchTeamMarks(
       );
     }
   }
+
+Future<void> fetchEvaluationStatus(String teamCode) async {
+    final url = Uri.parse(
+      'https://script.google.com/macros/s/AKfycbwaGc1uKBHC9K6U1PNEvdvq9IzuS5MPBFZ_W-Doti93okBGWkfxCdJMWsY84QLYrPC_/exec?check_evaluation_status=true&team_code=$teamCode',
+    );
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          e1Status = data['e1_status'] ?? false;
+          e2Status = data['e2_status'] ?? false;
+          log('Eval 1 : $e1Status , Eval 2 : $e2Status');
+        });
+      } else {
+        print("HTTP Error: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("Error fetching evaluation statusasdfgh: $e");
+    }
+  }
