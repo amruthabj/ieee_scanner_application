@@ -225,28 +225,81 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
             ),
             if (e1Status || e2Status) ...[
               const Divider(thickness: 1),
+              const SizedBox(height: 5),
               if (e1Status)
                 GestureDetector(
-                  onTap: () {},
-                  child: Text(
-                    "View 1st Evaluation Scores",
-                    style: TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.underline,
+                  onTap: () {
+                    // Your navigation or action logic here
+                  },
+                  child: Card(
+                    color: Colors.green.shade50,
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: Colors.green.shade400,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.remove_red_eye, color: Colors.green),
+                          SizedBox(width: 10),
+                          Text(
+                            "View 1st Evaluation Scores",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 5),
               if (e2Status)
                 GestureDetector(
-                  onTap: () {},
-                  child: Text(
-                    "View 2nd Evaluation Scores",
-                    style: TextStyle(
-                      fontSize: 19,
-                      fontWeight: FontWeight.bold,
-                      decoration: TextDecoration.underline,
+                  onTap: () {
+                    // Your navigation or action logic here
+                  },
+                  child: Card(
+                    color: Colors.green.shade50,
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: Colors.green.shade400,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.remove_red_eye, color: Colors.green),
+                          SizedBox(width: 10),
+                          Text(
+                            "View 2nd Evaluation Scores",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
