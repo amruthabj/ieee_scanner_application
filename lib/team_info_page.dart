@@ -20,6 +20,9 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
   bool isEvaluation1 = true;
   bool e1Status = false;
   bool e2Status = false;
+  String button_text = "EVALUATE";
+  late final e1_marks;
+  late final e2_marks;
 
   final Color purple = const Color(0xFF6A1B9A); // Deep purple
   final Color lightPurple = const Color(0xFFE1BEE7); // Soft purple
@@ -44,12 +47,60 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
           e1Status = data['e1_status'] ?? false;
           e2Status = data['e2_status'] ?? false;
           log('Eval 1 : $e1Status , Eval 2 : $e2Status');
+          button_text =
+              e1Status
+                  ? (e2Status ? "FINAL EVALUATION DONE" : "EVALUATION 1 DONE")
+                  : "EVALUATE";
         });
+        if (e1Status) {
+          e1_marks = await fetchTeamMarks(
+            teamCode: widget.teamId,
+            eval_number: 1, // or 2 depending
+          );
+          log('$e1_marks');
+        }
+
+        if (e2Status) {
+          e2_marks = await fetchTeamMarks(
+            teamCode: widget.teamId,
+            eval_number: 2, // or 2 depending
+          );
+          log('$e2_marks');
+        }
+
+        log('E1 Marks = $e1_marks \n E2 Marks = $e2_marks');
       } else {
         print("HTTP Error: ${response.statusCode}");
       }
     } catch (e) {
       print("Error fetching evaluation statusasdfgh: $e");
+    }
+  }
+
+  Future<Map<String, dynamic>?> fetchTeamMarks({
+    required String teamCode,
+    required int eval_number,
+  }) async {
+    print("Fetching marks for team code: $teamCode");
+    String eval_sheet_name = eval_number == 1 ? "E1%20Scores" : "E2%20Scores";
+
+    final url = Uri.parse(
+      'https://script.google.com/macros/s/AKfycbwaGc1uKBHC9K6U1PNEvdvq9IzuS5MPBFZ_W-Doti93okBGWkfxCdJMWsY84QLYrPC_/exec?fetch_team_marks=true&eval_sheet=$eval_sheet_name&team_code=$teamCode',
+    );
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print("Fetched Marks: $data");
+        return data;
+      } else {
+        print("Failed to fetch marks. Status code: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching team marks: $e");
+      return null;
     }
   }
 
@@ -223,40 +274,145 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                 ),
               ],
             ),
+            if (e1Status || e2Status) ...[
+              const Divider(thickness: 1),
+              const SizedBox(height: 5),
+              if (e1Status)
+                GestureDetector(
+                  onTap: () {
+                    // Your navigation or action logic here
+                    // log($e)
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => Evaluation_Page(
+                              teamCode: widget.teamId,
+                              teamName: teamData['team_name'] ?? '',
+                              evalution_number: isEvaluation1 ? 1 : 2,
+                              marksData: e1_marks,
+                            ),
+                      ),
+                    );
+                  },
+                  child: Card(
+                    color: Colors.green.shade50,
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: Colors.green.shade400,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.remove_red_eye, color: Colors.green),
+                          SizedBox(width: 10),
+                          Text(
+                            "View 1st Evaluation Scores",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              const SizedBox(height: 5),
+              if (e2Status)
+                GestureDetector(
+                  onTap: () {
+                    // Your navigation or action logic here
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) => Evaluation_Page(
+                              teamCode: widget.teamId,
+                              teamName: teamData['team_name'] ?? '',
+                              evalution_number: isEvaluation1 ? 1 : 2,
+                              marksData: e2_marks,
+                            ),
+                      ),
+                    );
+                  },
+                  child: Card(
+                    color: Colors.green.shade50,
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: Colors.green.shade400,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.remove_red_eye, color: Colors.green),
+                          SizedBox(width: 10),
+                          Text(
+                            "View 2nd Evaluation Scores",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ],
         ),
       ),
       bottomNavigationBar: GestureDetector(
-        onTap: () {
-          // fetchTeamMarks(
-          //   teamCode: "TEAM001",
-          //   eval_number: isEvaluation1 ? 1 : 2,
-          // );
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder:
-                  (context) => Evaluation_Page(
-                    teamCode: widget.teamId,
-                    teamName: teamData['team_name'] ?? '',
-                    evalution_number: isEvaluation1 ? 1 : 2,
-                  ),
-            ),
-          );
-        },
+        onTap:
+            (e1Status && e2Status)
+                ? null
+                : () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => Evaluation_Page(
+                            teamCode: widget.teamId,
+                            teamName: teamData['team_name'] ?? '',
+                            evalution_number: isEvaluation1 ? 1 : 2,
+                          ),
+                    ),
+                  );
+                },
         child: Container(
           margin: EdgeInsets.all(5),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           height: 50,
           decoration: BoxDecoration(
             border: Border(top: BorderSide(color: Colors.grey.shade300)),
-            color: purple,
+            color: (e1Status && e2Status) ? Colors.green : purple,
           ),
           child: Container(
             padding: EdgeInsets.all(2),
             child: Center(
               child: Text(
-                "EVALUATE",
+                button_text,
                 style: TextStyle(
                   fontSize: 18,
                   color: Colors.white,

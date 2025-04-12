@@ -2,16 +2,18 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:ieee_scanner_application/widgets/success_snackbar.dart';
 
 class Evaluation_Page extends StatefulWidget {
   final String teamCode;
   final String teamName;
   final int evalution_number;
-
+  final Map<String, dynamic>? marksData;
   Evaluation_Page({
     required this.teamCode,
     required this.teamName,
     required this.evalution_number,
+    this.marksData,
   });
 
   @override
@@ -21,6 +23,8 @@ class Evaluation_Page extends StatefulWidget {
 class _Evaluation_PageState extends State<Evaluation_Page> {
   final _formKey = GlobalKey<FormState>();
   bool firstEvaluationDone = false;
+  final Map<String, TextEditingController> controllers = {};
+  final Map<String, bool> editableFields = {};
 
   final Map<String, dynamic> formData = {
     "teamCode": "",
@@ -38,7 +42,60 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
     super.initState();
     formData['teamCode'] = widget.teamCode;
     formData['teamName'] = widget.teamName;
+    if (widget.marksData != null) {
+      formData['clarity'] = widget.marksData!['problemClarity'];
+      formData['progress'] = widget.marksData!['progress'];
+      formData['technicalDepth'] = widget.marksData!['technicalDepth'];
+      formData['innovation'] = widget.marksData!['innovation'];
+      formData['collaboration'] = widget.marksData!['collaboration'];
+      formData['scalability'] = widget.marksData!['scalability'];
+    }
+    ;
+    final keys = [
+      'clarity',
+      'progress',
+      'technicalDepth',
+      'innovation',
+      'collaboration',
+      'scalability',
+    ];
+    for (var key in keys) {
+      final value =
+          widget.marksData?[key] ?? widget.marksData?[_convertKey(key)] ?? '';
+      formData[key] = _safeParseDouble(value);
+      controllers[key] = TextEditingController(text: value?.toString() ?? '');
+      editableFields[key] =
+          value == '' || value == null; // disable if pre-filled
+    }
     checkFirstEvaluationStatus();
+  }
+
+  double? _safeParseDouble(dynamic value) {
+    if (value == null || value == '') return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
+  }
+
+  String _convertKey(String key) {
+    // Converts camelCase to expected Google Sheet field names if needed
+    switch (key) {
+      case 'clarity':
+        return 'problemClarity';
+      case 'progress':
+        return 'progress';
+      case 'technicalDepth':
+        return 'technicalDepth';
+      case 'innovation':
+        return 'innovation';
+      case 'collaboration':
+        return 'collaboration';
+      case 'scalability':
+        return 'scalability';
+      default:
+        return key;
+    }
   }
 
   Future<void> checkFirstEvaluationStatus() async {
@@ -66,6 +123,45 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
     }
   }
 
+  // Future<void> _submitForm() async {
+  //   if (_formKey.currentState!.validate()) {
+  //     _formKey.currentState!.save();
+  //
+  //     log("CLICKED");
+  //
+  //     double total =
+  //         (formData['clarity'] ?? 0).toDouble() +
+  //         (formData['progress'] ?? 0).toDouble() +
+  //         (formData['technicalDepth'] ?? 0).toDouble() +
+  //         (formData['innovation'] ?? 0).toDouble() +
+  //         (formData['collaboration'] ?? 0).toDouble() +
+  //         (formData['scalability'] ?? 0).toDouble();
+  //
+  //     Map<String, dynamic> finalData = {
+  //       ...formData,
+  //       'totalScore': total.round(),
+  //       'eval_sheet': widget.evalution_number == 1 ? "E1 Scores" : "E2 Scores",
+  //     };
+  //     final String url =
+  //         "https://script.google.com/macros/s/AKfycbwaGc1uKBHC9K6U1PNEvdvq9IzuS5MPBFZ_W-Doti93okBGWkfxCdJMWsY84QLYrPC_/exec";
+  //     final response = await http.post(
+  //       Uri.parse(url),
+  //       headers: {"Content-Type": "application/json"},
+  //       body: jsonEncode(finalData),
+  //     );
+  //     if (response.statusCode == 200) {
+  //       ScaffoldMessenger.of(context).showSnackBar(
+  //         SnackBar(
+  //           content: Text('Scores updated successfully!'),
+  //           backgroundColor: Colors.green,
+  //         ),
+  //       );
+  //     } else {
+  //       throw Exception('Failed to update');
+  //     }
+  //     log('${response.body}');
+  //   }
+  // }
   Future<void> _submitForm() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
@@ -87,16 +183,38 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
       };
       final String url =
           "https://script.google.com/macros/s/AKfycbwaGc1uKBHC9K6U1PNEvdvq9IzuS5MPBFZ_W-Doti93okBGWkfxCdJMWsY84QLYrPC_/exec";
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(finalData),
-      );
-      log('${response.body}');
+
+      try {
+        final response = await http.post(
+          Uri.parse(url),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode(finalData),
+        );
+
+        showSuccessSnackBar(
+          context: context,
+          message: "Update Score Successfully",
+        );
+        setState(() {
+          for (var key in editableFields.keys) {
+            editableFields[key] = false;
+          }
+        });
+      } catch (e) {
+        log('ERRRRRRORRRR : $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update scores'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   Widget _scoreInput(String label, String key, double maxScore) {
+    final controller = controllers[key]!;
+    final isEditable = editableFields[key] ?? true;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -127,8 +245,9 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
           Expanded(
             flex: 1,
             child: TextFormField(
+              controller: controller,
               keyboardType: TextInputType.number,
-              initialValue: formData[key]?.toString() ?? '',
+              enabled: isEditable,
               decoration: InputDecoration(
                 isDense: true,
                 contentPadding: EdgeInsets.symmetric(
@@ -136,7 +255,8 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
                   vertical: 10,
                 ),
                 filled: true,
-                fillColor: Colors.purple.shade50,
+                fillColor:
+                    isEditable ? Colors.purple.shade50 : Colors.purple.shade100,
                 border: OutlineInputBorder(),
               ),
               validator: (value) {
@@ -148,7 +268,7 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
               },
               onChanged: (value) {
                 setState(() {
-                  formData[key] = double.tryParse(value) ?? 0;
+                  formData[key] = double.tryParse(value);
                 });
               },
             ),
@@ -156,15 +276,19 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
           IconButton(
             icon: Icon(Icons.edit, color: Colors.blue),
             onPressed: () {
-              // Implement your edit functionality here
-              print("Edit button pressed for $key");
+              setState(() {
+                editableFields[key] = true;
+              });
             },
           ),
           IconButton(
             icon: Icon(Icons.delete, color: Colors.red),
             onPressed: () {
-              // Implement your delete functionality here
-              print("Delete button pressed for $key");
+              setState(() {
+                controller.clear();
+                formData[key] = null;
+                editableFields[key] = true;
+              });
             },
           ),
         ],

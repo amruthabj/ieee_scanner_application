@@ -119,6 +119,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
           ),
         ),
       ),
+
       body:
           hasPermission
               ? Column(
