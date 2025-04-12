@@ -105,24 +105,32 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
   }
 
   Widget _buildLabeledField(String label, String? value) {
-    return Row(
-      children: [
-        Text(
-          "$label :",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        const SizedBox(width: 4),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-          // decoration: BoxDecoration(
-          //   border: Border(bottom: BorderSide(color: Colors.black, width: 1)),
-          // ),
-          child: Text(value ?? '', style: TextStyle(fontSize: 16)),
-        ),
-        const SizedBox(height: 10),
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "$label :",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+              child: Text(
+                value ?? '',
+                style: TextStyle(fontSize: 16),
+                softWrap: true,
+                overflow: TextOverflow.visible,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
