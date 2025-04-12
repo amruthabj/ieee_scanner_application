@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
-void showSuccessSnackBar({
+Future<void> showSuccessSnackBar({
   required BuildContext context,
   required String message,
-}) {
-  ScaffoldMessenger.of(context).showSnackBar(
+  Duration duration = const Duration(seconds: 2),
+}) async {
+  final controller = ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       behavior: SnackBarBehavior.floating,
       elevation: 8,
@@ -22,4 +23,5 @@ void showSuccessSnackBar({
       ),
     ),
   );
+  await controller.closed;
 }

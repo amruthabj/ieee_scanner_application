@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -21,20 +22,75 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
   bool e1Status = false;
   bool e2Status = false;
   String button_text = "EVALUATE";
-  late final e1_marks;
-  late final e2_marks;
+  Map<String, dynamic>? e1_marks;
+  Map<String, dynamic>? e2_marks;
+  bool isLoading = true;
 
   final Color purple = const Color(0xFF6A1B9A); // Deep purple
   final Color lightPurple = const Color(0xFFE1BEE7); // Soft purple
-
+  final Color disabledColor = Colors.grey;
   @override
   void initState() {
     super.initState();
     teamData = Map<String, dynamic>.from(widget.data);
-    fetchEvaluationStatus(widget.teamId);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchEvaluationStatus(widget.teamId);
+    });
   }
 
   Future<void> fetchEvaluationStatus(String teamCode) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (BuildContext context) {
+        // Stateful part for the dialog
+        String loadingMessage = "Fetching team details...";
+
+        return Stack(
+          children: [
+            // Blur effect
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: Container(color: Colors.transparent),
+              ),
+            ),
+            // Dialog content
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.25,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 20),
+                    AnimatedSwitcher(
+                      duration: Duration(milliseconds: 300),
+                      child: Text(
+                        key: ValueKey(loadingMessage),
+                        loadingMessage,
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    log("SHOWED DIALOG");
     final url = Uri.parse(
       'https://script.google.com/macros/s/AKfycbwaGc1uKBHC9K6U1PNEvdvq9IzuS5MPBFZ_W-Doti93okBGWkfxCdJMWsY84QLYrPC_/exec?check_evaluation_status=true&team_code=$teamCode',
     );
@@ -47,15 +103,23 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
           e1Status = data['e1_status'] ?? false;
           e2Status = data['e2_status'] ?? false;
           log('Eval 1 : $e1Status , Eval 2 : $e2Status');
+          if (!e1Status && !e2Status) {
+            isEvaluation1 = true;
+          } else if (e1Status && !e2Status) {
+            isEvaluation1 = false;
+          }
+
           button_text =
               e1Status
-                  ? (e2Status ? "FINAL EVALUATION DONE" : "EVALUATION 1 DONE")
-                  : "EVALUATE";
+                  ? (e2Status ? "FINAL EVALUATION DONE" : "EVALUATE [IInd]")
+                  : "EVALUATE [Ist]";
         });
+        setState(() => isLoading = false);
+
         if (e1Status) {
           e1_marks = await fetchTeamMarks(
             teamCode: widget.teamId,
-            eval_number: 1, // or 2 depending
+            eval_number: 1,
           );
           log('$e1_marks');
         }
@@ -63,17 +127,28 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
         if (e2Status) {
           e2_marks = await fetchTeamMarks(
             teamCode: widget.teamId,
-            eval_number: 2, // or 2 depending
+            eval_number: 2,
           );
           log('$e2_marks');
         }
 
-        log('E1 Marks = $e1_marks \n E2 Marks = $e2_marks');
+        log(
+          'Got evaluation marks...\nE1 Marks = $e1_marks \n E2 Marks = $e2_marks',
+        );
+        log(
+          'E1 STATUS : $e1Status\n E2 STATUS : $e2Status \n ISEVAL1 : $isEvaluation1',
+        );
       } else {
         print("HTTP Error: ${response.statusCode}");
+        setState(() => isLoading = false);
       }
     } catch (e) {
-      print("Error fetching evaluation statusasdfgh: $e");
+      print("Error fetching evaluation status: $e");
+      setState(() => isLoading = false);
+    } finally {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
     }
   }
 
@@ -106,9 +181,9 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
 
   Widget _buildLabeledField(String label, String? value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10.0),
+      padding: const EdgeInsets.only(bottom: 5.0),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             "$label :",
@@ -130,7 +205,6 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
       ),
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -171,7 +245,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
               ),
             ),
             const SizedBox(height: 10),
-            _buildLabeledField("TEAM CODE", "< ${widget.teamId} />"),
+            _buildLabeledField("TEAM CODE", " ${widget.teamId} "),
             const Divider(thickness: 2),
             _buildLabeledField("COLLEGE", teamData['college']),
             const Divider(thickness: 2),
@@ -206,90 +280,102 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                 child: Text(member, style: TextStyle(fontSize: 16)),
               ),
             ),
-            const SizedBox(height: 10),
-            const Divider(thickness: 1),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'EVALUATION :',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                const SizedBox(width: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    color: lightPurple,
-                    borderRadius: BorderRadius.circular(8),
+            const SizedBox(height: 8),
+            if (!(e1Status && e2Status)) ...[
+              const Divider(thickness: 1),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'EVALUATION :',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
-                  child: Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          setState(() => isEvaluation1 = true);
-                          log('Evaluation : ${isEvaluation1 ? 'I' : 'II'}');
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isEvaluation1 ? purple : lightPurple,
-                            borderRadius: const BorderRadius.only(
-                              topLeft: Radius.circular(8),
-                              bottomLeft: Radius.circular(8),
+                  const SizedBox(width: 10),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: lightPurple,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap:
+                              e1Status
+                                  ? null
+                                  : () {
+                                    setState(() => isEvaluation1 = true);
+                                  },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
                             ),
-                          ),
-                          child: Text(
-                            "I",
-                            style: TextStyle(
-                              color:
-                                  isEvaluation1 ? Colors.white : Colors.black,
-                              fontWeight: FontWeight.bold,
+                            decoration: BoxDecoration(
+                              color: e1Status ? disabledColor : purple,
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(8),
+                                bottomLeft: Radius.circular(8),
+                              ),
+                            ),
+                            child: Text(
+                              "I",
+                              style: TextStyle(
+                                color: e1Status ? Colors.black : Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() => isEvaluation1 = false);
-                          log('Evaluation : ${isEvaluation1 ? 'I' : 'II'}');
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            color: !isEvaluation1 ? purple : lightPurple,
-                            borderRadius: const BorderRadius.only(
-                              topRight: Radius.circular(8),
-                              bottomRight: Radius.circular(8),
+                        GestureDetector(
+                          onTap:
+                              (isEvaluation1)
+                                  ? null
+                                  : () {
+                                    setState(() => isEvaluation1 = false);
+                                    log("State changed");
+                                  },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
                             ),
-                          ),
-                          child: Text(
-                            "II",
-                            style: TextStyle(
+                            decoration: BoxDecoration(
                               color:
-                                  !isEvaluation1 ? Colors.white : Colors.black,
-                              fontWeight: FontWeight.bold,
+                                  !isEvaluation1
+                                      ? (e2Status ? disabledColor : purple)
+                                      : disabledColor,
+                              borderRadius: const BorderRadius.only(
+                                topRight: Radius.circular(8),
+                                bottomRight: Radius.circular(8),
+                              ),
+                            ),
+                            child: Text(
+                              "II",
+                              style: TextStyle(
+                                color:
+                                    !isEvaluation1
+                                        ? (e2Status
+                                            ? Colors.black
+                                            : Colors.white)
+                                        : Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+              const SizedBox(height: 10),
+            ],
             if (e1Status || e2Status) ...[
               const Divider(thickness: 1),
-              const SizedBox(height: 5),
+              const SizedBox(height: 8),
               if (e1Status)
                 GestureDetector(
                   onTap: () {
-                    // Your navigation or action logic here
-                    // log($e)
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -297,7 +383,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                             (context) => Evaluation_Page(
                               teamCode: widget.teamId,
                               teamName: teamData['team_name'] ?? '',
-                              evalution_number: isEvaluation1 ? 1 : 2,
+                              evalution_number: 1,
                               marksData: e1_marks,
                             ),
                       ),
@@ -348,7 +434,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                             (context) => Evaluation_Page(
                               teamCode: widget.teamId,
                               teamName: teamData['team_name'] ?? '',
-                              evalution_number: isEvaluation1 ? 1 : 2,
+                              evalution_number: 2,
                               marksData: e2_marks,
                             ),
                       ),
@@ -395,8 +481,8 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
         onTap:
             (e1Status && e2Status)
                 ? null
-                : () {
-                  Navigator.push(
+                : () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder:
@@ -407,6 +493,10 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                           ),
                     ),
                   );
+                  if (result == true) {
+                    // Refresh the evaluation status
+                    await fetchEvaluationStatus(widget.teamId);
+                  }
                 },
         child: Container(
           margin: EdgeInsets.all(5),
@@ -414,7 +504,10 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
           height: 50,
           decoration: BoxDecoration(
             border: Border(top: BorderSide(color: Colors.grey.shade300)),
-            color: (e1Status && e2Status) ? Colors.green : purple,
+            color:
+                (e1Status && e2Status)
+                    ? Colors.green
+                    : (isEvaluation1 ? purple : purple), //TODO CHECK COLOR
           ),
           child: Container(
             padding: EdgeInsets.all(2),

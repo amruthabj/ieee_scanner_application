@@ -36,6 +36,7 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
     "collaboration": null,
     "scalability": null,
   };
+  bool _formSubmitted = false;
 
   @override
   void initState() {
@@ -196,6 +197,7 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
           message: "Update Score Successfully",
         );
         setState(() {
+          _formSubmitted = true;
           for (var key in editableFields.keys) {
             editableFields[key] = false;
           }
@@ -298,116 +300,151 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.purple[50],
-      appBar: AppBar(
-        backgroundColor: Colors.purple[200],
-        elevation: 0,
-        title: Text(
-          'XYNTRA 25 EVAL SCANNER',
-          style: TextStyle(fontSize: 14, color: Colors.black),
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(context, _formSubmitted);
+        return false;
+      },
+      child: Scaffold(
+        backgroundColor: Colors.purple[50],
+        appBar: AppBar(
+          leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context, _formSubmitted);
+            },
+            icon: Icon(Icons.arrow_back),
+          ),
+          backgroundColor: Colors.purple[200],
+          elevation: 0,
+          title: Text(
+            'XYNTRA 25 EVAL SCANNER',
+            style: TextStyle(fontSize: 14, color: Colors.black),
+          ),
+          centerTitle: true,
         ),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              Container(
-                color: Colors.purple[100],
-                padding: const EdgeInsets.all(12),
-                child: Center(
-                  child: Text(
-                    widget.teamName.toUpperCase(),
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: Colors.purple[800],
+        body: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              children: [
+                Container(
+                  color: Colors.purple[100],
+                  padding: const EdgeInsets.all(12),
+                  child: Center(
+                    child: Text(
+                      widget.teamName.toUpperCase(),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.purple[800],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              _scoreInput("Problem Clarity", "clarity", 15),
-              _scoreInput("Progress", "progress", 25),
-              _scoreInput("Technical Depth", "technicalDepth", 20),
-              _scoreInput("Innovation", "innovation", 15),
-              _scoreInput("Collaboration", "collaboration", 10),
-              _scoreInput("Scalability", "scalability", 10),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Text(
-                      "TOTAL SCORE :",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      height: 40,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.purple.shade100,
-                        borderRadius: BorderRadius.circular(4),
-                      ),
+                const SizedBox(height: 20),
+                _scoreInput("Problem Clarity", "clarity", 15),
+                _scoreInput("Progress", "progress", 25),
+                _scoreInput("Technical Depth", "technicalDepth", 20),
+                _scoreInput("Innovation", "innovation", 15),
+                _scoreInput("Collaboration", "collaboration", 10),
+                _scoreInput("Scalability", "scalability", 10),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
                       child: Text(
-                        (() {
-                          double total =
-                              (formData['clarity'] ?? 0).toDouble() +
-                              (formData['progress'] ?? 0).toDouble() +
-                              (formData['technicalDepth'] ?? 0).toDouble() +
-                              (formData['innovation'] ?? 0).toDouble() +
-                              (formData['collaboration'] ?? 0).toDouble() +
-                              (formData['scalability'] ?? 0).toDouble();
-                          return total.round().toString();
-                        })(),
+                        "TOTAL SCORE :",
                         style: TextStyle(
+                          fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.purple[900],
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 30),
-              firstEvaluationDone
-                  ? Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Center(
-                      child: Text(
-                        "1ST EVALUATION DONE",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: Colors.purple.shade100,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          (() {
+                            double total =
+                                (formData['clarity'] ?? 0).toDouble() +
+                                (formData['progress'] ?? 0).toDouble() +
+                                (formData['technicalDepth'] ?? 0).toDouble() +
+                                (formData['innovation'] ?? 0).toDouble() +
+                                (formData['collaboration'] ?? 0).toDouble() +
+                                (formData['scalability'] ?? 0).toDouble();
+                            return total.round().toString();
+                          })(),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple[900],
+                          ),
                         ),
                       ),
                     ),
-                  )
-                  : ElevatedButton(
-                    onPressed: _submitForm,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple[800],
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      textStyle: TextStyle(fontSize: 16),
+                  ],
+                ),
+                const SizedBox(height: 30),
+                firstEvaluationDone
+                    ? Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "1ST EVALUATION DONE",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    )
+                    : Column(
+                      children: [
+                        ElevatedButton(
+                          onPressed: _submitForm,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.purple[800],
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            textStyle: TextStyle(fontSize: 16),
+                            minimumSize: Size(double.infinity, 50),
+                          ),
+                          child: Text('UPDATE SCORE'),
+                        ),
+                        SizedBox(height: 10),
+                        OutlinedButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            Navigator.pop(context);
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.purple[800],
+                            side: BorderSide(color: Colors.purple),
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            textStyle: TextStyle(fontSize: 16),
+                            minimumSize: Size(
+                              double.infinity,
+                              50,
+                            ), // Full width
+                          ),
+                          child: Text('NEXT QR'),
+                        ),
+                      ],
                     ),
-                    child: Text('UPDATE SCORE'),
-                  ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
