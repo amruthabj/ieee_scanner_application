@@ -47,6 +47,7 @@
     "location": "Madurai",
     "lead_contact": "9361393926"
   },
+
   "XYN25-005": {
     "team_name": "CacheCrew",
     "members": [
@@ -95,6 +96,7 @@
     "location": "Chennai",
     "lead_contact": "9655847834"
   },
+
   "XYN25-009": {
     "team_name": "Intervix",
     "members": [
@@ -108,6 +110,8 @@
     "location": "Pondicherry",
     "lead_contact": "8925442895"
   },
+
+
   "XYN25-010": {
     "team_name": "DigiSquad",
     "members": [
@@ -254,7 +258,7 @@
   },
   "XYN25-021": {
     "team_name": "Team Sentinels",
-    "members": ["Lithesh M", "Fahim Ahamed B", "Karunya M", "Jayalakshmi M"],
+    "members": ["Lithesh M", "Fahim Ahamed B", "Karunya M", "Jayalakshmi M","Kartickeeyaan M"],
     "college": "Rajalakshmi engineering college",
     "location": "Chennai",
     "lead_contact": "8610088259"
@@ -287,6 +291,8 @@
     "location": "Chennai",
     "lead_contact": "9344088545"
   },
+
+
   "XYN25-025": {
     "team_name": "SAKSHaM",
     "members": [
@@ -402,7 +408,7 @@
       "R Niranjan",
       "Soundar Palanibharathi K"
     ],
-    "college": "Jerusalem College Of Engineering",
+    "college": "Jerusalem College Of Engineering ",
     "location": "Chennai",
     "lead_contact": "9345414914"
   },

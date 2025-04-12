@@ -315,6 +315,24 @@ class _QRScannerPageState extends State<QRScannerPage> {
                     cutOutSize: MediaQuery.of(context).size.width * 0.7,
                   ),
                 ),
+                // Image that appears when the camera is paused
+                if (isCameraPaused)
+                  Center(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.asset(
+                          'assets/qrlogo.png',  // Add the image you want here
+                          height: MediaQuery.of(context).size.width * 0.7, // Adjust the image size to fit the QR view
+                          width: MediaQuery.of(context).size.width * 0.7,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
                 // View Rankings Button - Centered above bottom buttons
                 Positioned(
                   bottom: 120,
