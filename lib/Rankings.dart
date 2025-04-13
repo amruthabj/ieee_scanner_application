@@ -82,6 +82,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:ieee_scanner_application/Constants.dart';
+
 class TeamRankingsPage extends StatefulWidget {
   @override
   _TeamRankingsPageState createState() => _TeamRankingsPageState();
@@ -122,12 +124,15 @@ class _TeamRankingsPageState extends State<TeamRankingsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Team Rankings"),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: ieee_offl_color,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.deepPurple.shade50, Colors.deepPurple.shade100],
+            colors: [
+              Colors.deepPurple.shade50,
+              ieee_offl_color.withOpacity(0.001),
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -136,8 +141,12 @@ class _TeamRankingsPageState extends State<TeamRankingsPage> {
           future: rankingsFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator(color: Colors.deepPurple));
-            } else if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(
+                child: CircularProgressIndicator(color: Colors.deepPurple),
+              );
+            } else if (snapshot.hasError ||
+                !snapshot.hasData ||
+                snapshot.data!.isEmpty) {
               return Center(child: Text("No rankings available."));
             }
 
@@ -149,16 +158,18 @@ class _TeamRankingsPageState extends State<TeamRankingsPage> {
               itemBuilder: (context, index) {
                 final team = rankings[index];
                 return Card(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 4,
                   margin: EdgeInsets.symmetric(vertical: 8),
                   color: Colors.white,
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.deepPurple.shade100,
+                      backgroundColor: ieee_offl_color,
                       child: Text(
                         '#${index + 1}',
-                        style: TextStyle(color: Colors.deepPurple),
+                        style: TextStyle(color: Colors.black),
                       ),
                     ),
                     title: Text(
@@ -169,7 +180,7 @@ class _TeamRankingsPageState extends State<TeamRankingsPage> {
                     trailing: Text(
                       "Score: ${team['totalScore'] ?? 0}",
                       style: TextStyle(
-                        color: Colors.deepPurple,
+                        color: Colors.black,
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
                       ),
