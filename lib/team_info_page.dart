@@ -120,7 +120,8 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
               button_text.contains("IInd")
                   ? "IInd"
                   : (button_text.contains("Ist") ? "Ist" : "");
-          baseText = button_text.replaceAll("[ $romanPart ]", "").trim();
+          baseText = button_text.replaceAll("[$romanPart]", "").trim();
+          log("base text is $baseText");
           isLoading = false;
         });
 
@@ -168,7 +169,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
     String eval_sheet_name = eval_number == 1 ? "E1%20Scores" : "E2%20Scores";
 
     final url = Uri.parse(
-      'https://script.google.com/macros/s/AKfycbwaGc1uKBHC9K6U1PNEvdvq9IzuS5MPBFZ_W-Doti93okBGWkfxCdJMWsY84QLYrPC_/exec?fetch_team_marks=true&eval_sheet=$eval_sheet_name&team_code=$teamCode',
+      'https://script.google.com/macros/s/AKfycbyEUcAuwFzrTV_6ia2i-vDEmvwV35vHdizEkNkJpdBpCumXZA8uy-1NfjCZ07GiP6Yr/exec?fetch_team_marks=true&eval_sheet=$eval_sheet_name&team_code=$teamCode',
     );
 
     try {
@@ -227,9 +228,10 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
         title: const Text(
           'XYNTRA 25 EVAL SCANNER',
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 17,
             letterSpacing: 1,
             color: Colors.black87,
+            fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
@@ -301,7 +303,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                   const SizedBox(width: 10),
                   Container(
                     decoration: BoxDecoration(
-                      color: lightPurple,
+                      color: ieee_offl_color, //TODO CHECK COLOR
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -536,16 +538,16 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                 text: TextSpan(
                   style: TextStyle(color: Colors.white, fontSize: 16),
                   children: [
-                    TextSpan(text: '$baseText [ '),
+                    TextSpan(text: '$baseText'),
+                    if (!(e1Status && e2Status)) TextSpan(text: ' ['),
                     TextSpan(
                       text: romanPart,
                       style: TextStyle(
-                        fontFamily:
-                            'Luxurious Roman', // Use your Roman font here
+                        fontFamily: 'Luxurious Roman',
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    TextSpan(text: ' ]'),
+                    if (!(e1Status && e2Status)) TextSpan(text: ' ]'),
                   ],
                 ),
               ),

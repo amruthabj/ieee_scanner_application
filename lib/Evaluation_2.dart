@@ -36,6 +36,7 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
     "innovation": null,
     "collaboration": null,
     "scalability": null,
+    "businessModel": null,
   };
   bool _formSubmitted = false;
 
@@ -51,6 +52,7 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
       formData['innovation'] = widget.marksData!['innovation'];
       formData['collaboration'] = widget.marksData!['collaboration'];
       formData['scalability'] = widget.marksData!['scalability'];
+      formData['businessModel'] = widget.marksData!['businessModel'];
     }
     ;
     final keys = [
@@ -60,6 +62,7 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
       'innovation',
       'collaboration',
       'scalability',
+      if (widget.evalution_number == 2) 'businessModel',
     ];
     for (var key in keys) {
       final value =
@@ -95,6 +98,8 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
         return 'collaboration';
       case 'scalability':
         return 'scalability';
+      case 'businessModel':
+        return 'businessModel';
       default:
         return key;
     }
@@ -168,7 +173,7 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
 
-      log("CLICKED");
+      log("CLICKED SUBMIT. Evaluation = ${widget.evalution_number}");
 
       double total =
           (formData['clarity'] ?? 0).toDouble() +
@@ -176,15 +181,23 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
           (formData['technicalDepth'] ?? 0).toDouble() +
           (formData['innovation'] ?? 0).toDouble() +
           (formData['collaboration'] ?? 0).toDouble() +
-          (formData['scalability'] ?? 0).toDouble();
+          (formData['scalability'] ?? 0).toDouble() +
+          (widget.evalution_number == 2
+              ? (formData['businessModel'] ?? 0).toDouble()
+              : 0);
 
       Map<String, dynamic> finalData = {
         ...formData,
         'totalScore': total.round(),
+        'eval_num': widget.evalution_number,
         'eval_sheet': widget.evalution_number == 1 ? "E1 Scores" : "E2 Scores",
       };
+      if (widget.evalution_number == 1) {
+        finalData.remove('businessModel');
+      }
+      log('Final Data : ${jsonEncode(finalData)}');
       final String url =
-          "https://script.google.com/macros/s/AKfycbwaGc1uKBHC9K6U1PNEvdvq9IzuS5MPBFZ_W-Doti93okBGWkfxCdJMWsY84QLYrPC_/exec";
+          "https://script.google.com/macros/s/AKfycbyEUcAuwFzrTV_6ia2i-vDEmvwV35vHdizEkNkJpdBpCumXZA8uy-1NfjCZ07GiP6Yr/exec";
 
       try {
         final response = await http.post(
@@ -231,6 +244,7 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
                   fontSize: 14,
                   color: Colors.black,
                 ),
+                //TODO CHANGE TO NEW LINE
                 children: [
                   TextSpan(text: "$label "),
                   TextSpan(
@@ -340,7 +354,7 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
-                        color: Colors.purple[800],
+                        color: Colors.black,
                       ),
                     ),
                   ),
@@ -352,6 +366,8 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
                 _scoreInput("Innovation", "innovation", 15),
                 _scoreInput("Collaboration", "collaboration", 10),
                 _scoreInput("Scalability", "scalability", 10),
+                if (widget.evalution_number == 2)
+                  _scoreInput("Business Model", "businessModel", 25),
                 const SizedBox(height: 20),
                 Row(
                   children: [
@@ -382,7 +398,11 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
                                 (formData['technicalDepth'] ?? 0).toDouble() +
                                 (formData['innovation'] ?? 0).toDouble() +
                                 (formData['collaboration'] ?? 0).toDouble() +
-                                (formData['scalability'] ?? 0).toDouble();
+                                (formData['scalability'] ?? 0).toDouble() +
+                                (widget.evalution_number == 2
+                                    ? (formData['businessModel'] ?? 0)
+                                        .toDouble()
+                                    : 0);
                             return total.round().toString();
                           })(),
                           style: TextStyle(
@@ -396,62 +416,42 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
                   ],
                 ),
                 const SizedBox(height: 30),
-                firstEvaluationDone
-                    ? Container(
-                      padding: EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(8),
+                Column(
+                  children: [
+                    ElevatedButton(
+                      onPressed: _submitForm,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: ieee_offl_color.withOpacity(0.75),
+                        foregroundColor: Colors.white,
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        textStyle: TextStyle(fontSize: 16),
+                        minimumSize: Size(double.infinity, 50),
                       ),
-                      child: Center(
-                        child: Text(
-                          "1ST EVALUATION DONE",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
+                      child: Text(
+                        'UPDATE SCORE',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
                         ),
                       ),
-                    )
-                    : Column(
-                      children: [
-                        ElevatedButton(
-                          onPressed: _submitForm,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: ieee_offl_color.withOpacity(0.75),
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            textStyle: TextStyle(fontSize: 16),
-                            minimumSize: Size(double.infinity, 50),
-                          ),
-                          child: Text(
-                            'UPDATE SCORE',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        OutlinedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            Navigator.pop(context);
-                          },
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.purple[800],
-                            side: BorderSide(color: Colors.purple),
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            textStyle: TextStyle(fontSize: 16),
-                            minimumSize: Size(
-                              double.infinity,
-                              50,
-                            ), // Full width
-                          ),
-                          child: Text('NEXT QR'),
-                        ),
-                      ],
                     ),
+                    SizedBox(height: 10),
+                    OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.purple[800],
+                        side: BorderSide(color: Colors.purple),
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        textStyle: TextStyle(fontSize: 16),
+                        minimumSize: Size(double.infinity, 50), // Full width
+                      ),
+                      child: Text('NEXT QR'),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
