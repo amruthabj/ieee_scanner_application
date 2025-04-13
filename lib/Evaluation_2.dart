@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:ieee_scanner_application/Constants.dart';
 import 'package:ieee_scanner_application/widgets/success_snackbar.dart';
 
 class Evaluation_Page extends StatefulWidget {
@@ -258,7 +259,9 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
                 ),
                 filled: true,
                 fillColor:
-                    isEditable ? Colors.purple.shade50 : Colors.purple.shade100,
+                    isEditable
+                        ? Colors.purple.shade50
+                        : ieee_offl_color.withOpacity(0.75),
                 border: OutlineInputBorder(),
               ),
               validator: (value) {
@@ -314,7 +317,7 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
             },
             icon: Icon(Icons.arrow_back),
           ),
-          backgroundColor: Colors.purple[200],
+          backgroundColor: ieee_offl_color,
           elevation: 0,
           title: Text(
             'XYNTRA 25 EVAL SCANNER',
@@ -329,7 +332,7 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
             child: ListView(
               children: [
                 Container(
-                  color: Colors.purple[100],
+                  color: ieee_offl_color.withOpacity(0.75),
                   padding: const EdgeInsets.all(12),
                   child: Center(
                     child: Text(
@@ -368,7 +371,7 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
                         height: 40,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: Colors.purple.shade100,
+                          color: ieee_offl_color.withOpacity(0.75),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -385,7 +388,7 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            color: Colors.purple[900],
+                            color: Colors.black,
                           ),
                         ),
                       ),
@@ -415,13 +418,19 @@ class _Evaluation_PageState extends State<Evaluation_Page> {
                         ElevatedButton(
                           onPressed: _submitForm,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.purple[800],
+                            backgroundColor: ieee_offl_color.withOpacity(0.75),
                             foregroundColor: Colors.white,
                             padding: EdgeInsets.symmetric(vertical: 16),
                             textStyle: TextStyle(fontSize: 16),
                             minimumSize: Size(double.infinity, 50),
                           ),
-                          child: Text('UPDATE SCORE'),
+                          child: Text(
+                            'UPDATE SCORE',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
+                          ),
                         ),
                         SizedBox(height: 10),
                         OutlinedButton(

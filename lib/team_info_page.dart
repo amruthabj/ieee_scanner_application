@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'Constants.dart';
 import 'Evaluation_2.dart';
 
 class TeamInfoPage extends StatefulWidget {
@@ -25,6 +26,8 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
   Map<String, dynamic>? e1_marks;
   Map<String, dynamic>? e2_marks;
   bool isLoading = true;
+  String romanPart = "";
+  String baseText = "";
 
   final Color purple = const Color(0xFF6A1B9A); // Deep purple
   final Color lightPurple = const Color(0xFFE1BEE7); // Soft purple
@@ -113,8 +116,13 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
               e1Status
                   ? (e2Status ? "FINAL EVALUATION DONE" : "EVALUATE [IInd]")
                   : "EVALUATE [Ist]";
+          romanPart =
+              button_text.contains("IInd")
+                  ? "IInd"
+                  : (button_text.contains("Ist") ? "Ist" : "");
+          baseText = button_text.replaceAll("[ $romanPart ]", "").trim();
+          isLoading = false;
         });
-        setState(() => isLoading = false);
 
         if (e1Status) {
           e1_marks = await fetchTeamMarks(
@@ -213,7 +221,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: lightPurple,
+        backgroundColor: ieee_offl_color,
         elevation: 0,
         automaticallyImplyLeading: false,
         title: const Text(
@@ -231,7 +239,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
         child: Column(
           children: [
             Container(
-              color: purple.withOpacity(0.2),
+              color: ieee_offl_color.withOpacity(0.75),
               padding: const EdgeInsets.symmetric(vertical: 12),
               child: Center(
                 child: Text(
@@ -239,7 +247,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: purple,
+                    color: Colors.black,
                   ),
                 ),
               ),
@@ -272,7 +280,7 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                 margin: const EdgeInsets.only(bottom: 8),
                 height: 40,
                 decoration: BoxDecoration(
-                  color: lightPurple,
+                  color: ieee_offl_color.withOpacity(0.75),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 alignment: Alignment.centerLeft,
@@ -320,6 +328,8 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                             child: Text(
                               "I",
                               style: TextStyle(
+                                fontFamily: "Luxurious Roman",
+                                fontSize: 18,
                                 color: e1Status ? Colors.black : Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -352,6 +362,8 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
                             child: Text(
                               "II",
                               style: TextStyle(
+                                fontFamily: "Luxurious Roman",
+                                fontSize: 18,
                                 color:
                                     !isEvaluation1
                                         ? (e2Status
@@ -512,12 +524,29 @@ class _TeamInfoPageState extends State<TeamInfoPage> {
           child: Container(
             padding: EdgeInsets.all(2),
             child: Center(
-              child: Text(
-                button_text,
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+              // child: Text(
+              //   button_text,
+              //   style: TextStyle(
+              //     fontSize: 18,
+              //     color: Colors.white,
+              //     fontWeight: FontWeight.bold,
+              //   ),
+              // ),
+              child: RichText(
+                text: TextSpan(
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                  children: [
+                    TextSpan(text: '$baseText [ '),
+                    TextSpan(
+                      text: romanPart,
+                      style: TextStyle(
+                        fontFamily:
+                            'Luxurious Roman', // Use your Roman font here
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    TextSpan(text: ' ]'),
+                  ],
                 ),
               ),
             ),
